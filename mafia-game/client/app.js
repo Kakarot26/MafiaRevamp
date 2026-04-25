@@ -1,4 +1,4 @@
-const socket = io("http://mafiarevamp-production.up.railway.app");
+const socket = io("https://mafiarevamp-production.up.railway.app");
 
 const state = {
   myId: null,
