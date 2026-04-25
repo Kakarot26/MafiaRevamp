@@ -58,3 +58,8 @@ mafia-game/
 - **Roles** are never broadcast to other clients — only sent privately via `socket.to(id).emit`.
 - **Votes** use a `Map<targetId, Set<voterId>>` so each player can change their vote.
 - **Host transfer** happens automatically if the host disconnects.
+
+## Features to be implemented
+- **Leaderboard**
+- **Profile Customization**
+- **More Roles**
