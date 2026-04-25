@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAFIA — The Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@300;400;500&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+<body>
+  <div class="grain"></div>
+
+  <!-- ── LOBBY SCREEN ─────────────────────────────── -->
+  <div id="screen-lobby" class="screen active">
+    <header class="lobby-header">
+      <div class="logo">
+        <span class="logo-icon">🎭</span>
+        <h1>MAFIA</h1>
+        <p class="tagline">Trust no one. Survive.</p>
+      </div>
+      <div class="meta-bar">
+        <span id="online-count" class="meta-chip">● 0 Online</span>
+      </div>
+    </header>
+
+    <div class="lobby-body">
+      <!-- Left: Game panel -->
+      <div class="lobby-panel" id="panel-home">
+        <div class="player-identity">
+          <div class="avatar" id="lobby-avatar"></div>
+          <div>
+            <p class="identity-label">Playing as</p>
+            <p class="identity-name" id="lobby-name">—</p>
+          </div>
+          <button class="btn-ghost btn-sm" id="btn-rename">✎ Rename</button>
+        </div>
+
+        <div class="rename-box hidden" id="rename-box">
+          <input type="text" id="rename-input" placeholder="New name…" maxlength="20" />
+          <button class="btn-primary btn-sm" id="btn-rename-confirm">Set</button>
+        </div>
+
+        <div class="room-actions">
+          <button class="btn-primary big" id="btn-create">Create Room</button>
+          <button class="btn-outline big" id="btn-join-open">Join Room</button>
+        </div>
+
+        <div class="join-box hidden" id="join-box">
+          <input type="text" id="join-code-input" placeholder="Enter room code…" maxlength="10" />
+          <button class="btn-primary" id="btn-join-confirm">Join →</button>
+        </div>
+
+        <div class="how-to-play">
+          <details>
+            <summary>How to play</summary>
+            <ul>
+              <li>🔪 <strong>Killer</strong> — each night, silently eliminate a player.</li>
+              <li>💊 <strong>Medic</strong> — each night, choose someone to protect.</li>
+              <li>👤 <strong>Civilian</strong> — use your wits to vote out the killer.</li>
+              <li>Civilians win by eliminating the Killer. Killer wins by outnumbering civilians.</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+
+      <!-- Left: Room lobby (after join/create) -->
+      <div class="lobby-panel hidden" id="panel-room">
+        <div class="room-header-bar">
+          <div>
+            <p class="room-label">Room Code</p>
+            <p class="room-code-display" id="room-code-display">—</p>
+          </div>
+          <span id="room-count-display" class="meta-chip">0/15</span>
+        </div>
+
+        <div id="lobby-player-list" class="lobby-player-list"></div>
+
+        <div class="room-footer">
+          <button class="btn-ghost" id="btn-leave">← Leave</button>
+          <button class="btn-primary hidden" id="btn-start">Start Game</button>
+          <p class="host-hint hidden" id="host-hint">Waiting for host to start…</p>
+        </div>
+      </div>
+
+      <!-- Right: Chat -->
+      <div class="chat-panel">
+        <div class="chat-header">
+          <span>Chat</span>
+          <span class="chat-scope" id="chat-scope">Global</span>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Press / to chat…" maxlength="300" autocomplete="off" />
+          <button id="btn-send">▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GAME SCREEN ──────────────────────────────── -->
+  <div id="screen-game" class="screen">
+    <div class="game-hud">
+      <div class="hud-left">
+        <div class="role-badge" id="role-badge">
+          <span class="role-icon" id="role-icon">?</span>
+          <div>
+            <p class="role-label">Your Role</p>
+            <p class="role-name" id="role-name">—</p>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div class="phase-display" id="phase-display">
+          <span class="phase-icon" id="phase-icon">☀️</span>
+          <span class="phase-name" id="phase-name">Day</span>
+        </div>
+        <div class="timer-bar-wrap">
+          <div class="timer-bar" id="timer-bar"></div>
+        </div>
+        <p class="timer-text" id="timer-text">—</p>
+      </div>
+      <div class="hud-right">
+        <span id="game-online" class="meta-chip">● 0 alive</span>
+      </div>
+    </div>
+
+    <div class="game-body">
+      <!-- Player grid -->
+      <div class="players-section">
+        <h2 class="section-title">Players</h2>
+        <div class="player-grid" id="player-grid"></div>
+      </div>
+
+      <!-- Action / info panel -->
+      <div class="action-section">
+        <div id="action-panel" class="action-panel">
+          <p class="action-prompt" id="action-prompt">The town stirs…</p>
+          <div id="action-buttons" class="action-buttons"></div>
+        </div>
+
+        <!-- Night overlay message for civilians -->
+        <div id="civilian-night" class="civilian-night hidden">
+          <div class="moon-icon">🌙</div>
+          <p>You sleep while others scheme…</p>
+        </div>
+
+        <!-- Vote result flash -->
+        <div id="result-flash" class="result-flash hidden"></div>
+
+        <!-- Chat during game -->
+        <div class="in-game-chat">
+          <div class="messages small" id="game-messages"></div>
+          <div class="chat-input-row">
+            <input type="text" id="game-chat-input" placeholder="Chat…" maxlength="300" autocomplete="off" />
+            <button id="btn-game-send">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COUNTDOWN OVERLAY ────────────────────────── -->
+  <div id="countdown-overlay" class="overlay hidden">
+    <div class="overlay-box">
+      <p class="overlay-sub">Game starts in</p>
+      <p class="countdown-num" id="countdown-num">10</p>
+      <p class="overlay-sub">Prepare yourself…</p>
+    </div>
+  </div>
+
+  <!-- ── ROLE REVEAL OVERLAY ─────────────────────── -->
+  <div id="role-overlay" class="overlay hidden">
+    <div class="overlay-box role-reveal-box">
+      <p class="overlay-sub">You are the</p>
+      <div class="reveal-icon" id="reveal-icon">?</div>
+      <p class="reveal-role" id="reveal-role">—</p>
+      <p class="reveal-desc" id="reveal-desc"></p>
+      <button class="btn-primary" id="btn-role-dismiss">I'm ready</button>
+    </div>
+  </div>
+
+  <!-- ── GAME OVER OVERLAY ────────────────────────── -->
+  <div id="gameover-overlay" class="overlay hidden">
+    <div class="overlay-box gameover-box">
+      <p class="gameover-label" id="gameover-label">—</p>
+      <h2 class="gameover-title" id="gameover-title">—</h2>
+      <div class="gameover-players" id="gameover-players"></div>
+      <button class="btn-primary" id="btn-back-lobby">Back to Lobby</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
